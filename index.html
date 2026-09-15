@@ -5,54 +5,12 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="mobile-web-app-capable" content="yes"/>
 <meta name="theme-color" content="#1C3557"/>
 <title>Service Tracker</title>
-
 <link rel="manifest" id="pwa-manifest"/>
-<meta name="mobile-web-app-capable" content="yes"/>
-<meta name="apple-touch-fullscreen" content="yes"/>
-<script>
-const _mf = {
-  name:"Service Tracker Cantieri",short_name:"Tracker",
-  description:"Timesheet e tracker economico per cantieri impiantistici",
-  start_url:"./",display:"standalone",orientation:"portrait",
-  background_color:"#1C3557",theme_color:"#1C3557",
-  icons:[{
-    src:"data:image/svg+xml,"+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192"><rect width="192" height="192" rx="32" fill="%231C3557"/><circle cx="96" cy="96" r="56" fill="none" stroke="white" stroke-width="10"/><polyline points="96,60 96,96 116,116" stroke="white" stroke-width="10" stroke-linecap="round" fill="none"/></svg>'),
-    sizes:"192x192",type:"image/svg+xml",purpose:"any maskable"
-  }]
-};
-const _mb = new Blob([JSON.stringify(_mf)],{type:'application/manifest+json'});
-document.getElementById('pwa-manifest').href = URL.createObjectURL(_mb);
-</script>
-
-<script>
-if ('serviceWorker' in navigator) {
-  const swCode = `
-const CACHE = 'st-v5';
-self.addEventListener('install', e => { self.skipWaiting(); });
-self.addEventListener('activate', e => {
-  e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));
-  self.clients.claim();
-});
-self.addEventListener('fetch', e => {
-  if (e.request.url.includes('api.github.com')) return;
-  e.respondWith(
-    caches.match(e.request).then(r => r || fetch(e.request).then(res => {
-      const clone = res.clone();
-      caches.open(CACHE).then(c => c.put(e.request, clone));
-      return res;
-    }).catch(() => caches.match(e.request)))
-  );
-});
-`;
-  const blob = new Blob([swCode], {type: 'application/javascript'});
-  const swUrl = URL.createObjectURL(blob);
-  navigator.serviceWorker.register(swUrl).catch(e => console.log('SW:', e));
-}
-</script>
-
 <style>
+
 :root{
   --bg:#F0F4FA;--surface:#FFF;--surface2:#F7F9FC;
   --navy:#1C3557;--blue:#2E5594;--accent:#3A7BD5;
@@ -218,6 +176,7 @@ input:checked+.slider::before{transform:translateX(18px)}
 .trow-label{flex:1;font-size:13px;color:var(--text2)}
 .info-box{background:var(--surface2);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--text2);margin-bottom:12px;line-height:1.5;border-left:3px solid var(--accent)}
 .divider{height:1px;background:var(--border);margin:12px 0}
+
 </style>
 </head>
 <body>
@@ -225,12 +184,7 @@ input:checked+.slider::before{transform:translateX(18px)}
 
 <!-- SCREEN TIMER -->
 <div class="screen active" id="screen-timer">
-  <div class="topbar" style="display:flex;align-items:center;justify-content:space-between;gap:10px">
-    <div><h1>Service Tracker</h1><small id="topbar-date">–</small></div>
-    <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
-      <span id="sync-badge" onclick="openSyncSettings()" style="font-size:10px;font-weight:600;color:#fff;padding:4px 10px;border-radius:12px;cursor:pointer;white-space:nowrap;background:#555">⚙ Sync</span>
-    </div>
-  </div>
+  <div class="topbar" style="display:flex;align-items:center;justify-content:space-between;gap:10px"><h1>Service Tracker</h1><small id="topbar-date">–</small><span id="sync-badge" onclick="openSyncSettings()" style="font-size:10px;font-weight:600;color:#fff;padding:4px 10px;border-radius:12px;cursor:pointer;background:#555;flex-shrink:0">Sync</span></div>
   <div class="card">
     <div class="ch"><h2>Cronometro</h2><span id="tmr-pill" class="pill" style="display:none;background:var(--green)">● in corso</span></div>
     <div class="tmr-d"><div class="tmr-clk" id="tmr-clk">00:00:00</div><div class="tmr-lbl" id="tmr-lbl">Pronto</div></div>
@@ -352,6 +306,7 @@ input:checked+.slider::before{transform:translateX(18px)}
   </div>
 </div>
 
+<div id="pwa-bar" style="display:none;position:fixed;bottom:calc(72px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);width:calc(100% - 28px);max-width:452px;background:#1C3557;color:#fff;border-radius:12px;padding:12px 16px;align-items:center;gap:12px;z-index:90;box-shadow:0 4px 20px rgba(0,0,0,.3)"><div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:700">Installa Service Tracker</div><div style="font-size:11px;opacity:.75">Aggiungi alla schermata home per usarlo offline</div></div><button id="pwa-install-btn" style="background:#3A7BD5;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">Installa</button><button onclick="document.getElementById('pwa-bar').style.display='none'" style="background:none;border:none;color:#fff;cursor:pointer;padding:4px;font-size:20px;line-height:1;opacity:.7">&times;</button></div>
 <nav>
   <button class="nb active" id="nav-timer" onclick="showScreen('timer')">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg><span>Timer</span></button>
@@ -457,39 +412,14 @@ input:checked+.slider::before{transform:translateX(18px)}
   </div>
 </div>
 
-
-<!-- MODAL SYNC -->
-<div class="mo" id="mo-sync" onclick="closeMo('mo-sync')">
-  <div class="mb" onclick="event.stopPropagation()">
-    <div class="mh"></div>
-    <h2>☁ Sincronizzazione GitHub</h2>
-    <div class="info-box" style="margin-bottom:14px">
-      <b>Come configurare:</b><br>
-      1. Vai su <b>github.com</b> → Settings → Developer settings → Personal access tokens → Tokens (classic)<br>
-      2. Crea un token con permesso <b>gist</b><br>
-      3. Incolla il token qui sotto e salva.<br>
-      4. Per recuperare su un altro dispositivo: inserisci lo stesso token + l'ID Gist mostrato.
-    </div>
-    <div class="fg"><label>Personal Access Token GitHub</label>
-      <input class="fc" id="sync-token-input" type="password" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"/></div>
-    <div class="fg"><label>ID Gist (lascia vuoto al primo avvio – verrà creato)</label>
-      <input class="fc" id="sync-gist-id" type="text" placeholder="Verrà generato automaticamente…"/>
-      <small style="font-size:11px;color:var(--text3);margin-top:4px;display:block">Copia e conserva questo ID per recuperare i dati su altri dispositivi</small>
-    </div>
-    <div id="sync-last" style="font-size:12px;color:var(--text3);margin-bottom:12px"></div>
-    <button class="btn btn-p btn-f" onclick="saveSyncSettings()">Connetti e sincronizza</button>
-    <button class="btn btn-g btn-f" onclick="syncNow()" style="margin-top:8px">↑ Salva ora su GitHub</button>
-    <button class="btn btn-g btn-f" onclick="closeMo('mo-sync')" style="margin-top:8px">Chiudi</button>
-  </div>
-</div>
-
+<div class="mo" id="mo-sync" onclick="closeMo('mo-sync')"><div class="mb" onclick="event.stopPropagation()"><div class="mh"></div><h2>Sincronizzazione GitHub</h2><div class="info-box" style="margin-bottom:14px;font-size:12px;line-height:1.7"><b>Come configurare:</b><br>1. Vai su github.com - Settings - Developer settings - Personal access tokens - Tokens (classic)<br>2. Crea token con permesso <b>gist</b> e copia il token (inizia con ghp_)<br>3. Incolla qui sotto e premi Connetti<br>4. Conserva l'ID Gist per recuperare i dati su altri dispositivi</div><div class="fg"><label>Personal Access Token GitHub</label><input class="fc" id="sync-token-input" type="password" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"/></div><div class="fg"><label>ID Gist (vuoto al primo avvio)</label><input class="fc" id="sync-gist-id" type="text" placeholder="Generato automaticamente..."/><small style="font-size:11px;color:var(--text3);margin-top:4px;display:block">Conserva questo ID per altri dispositivi</small></div><div id="sync-last" style="font-size:12px;color:var(--text3);margin-bottom:12px"></div><button class="btn btn-p btn-f" onclick="saveSyncSettings()">Connetti e sincronizza</button><button class="btn btn-g btn-f" onclick="syncNow()" style="margin-top:8px">Salva ora su GitHub</button><button class="btn btn-g btn-f" onclick="closeMo('mo-sync')" style="margin-top:8px">Chiudi</button></div></div>
 <div class="cov" id="confirm-ov">
   <div class="cbox"><h3 id="c-title">Conferma</h3><p id="c-msg"></p>
     <div class="cacts"><button class="btn btn-g" onclick="cCancel()">Annulla</button><button class="btn btn-d" onclick="cOk()">Elimina</button></div>
   </div>
 </div>
 <div class="toast" id="toast"></div>
-
+<div class="toast" id="toast"></div>
 <script>
 // ── COSTANTI ───────────────────────────────────────────────────────────────────
 const VOCI=[
@@ -531,9 +461,9 @@ let dibaFasce=ld('stv4_db',[
   {label:'Da 300.001 a 500.000',perc:0.8},
   {label:'Oltre € 500.000',     perc:0.6},
 ]);
-const svC=()=>sv('stv4_c',cantieri);
-const svE=()=>sv('stv4_e',entries);
-const svDB=()=>sv('stv4_db',dibaFasce);
+let svC=()=>sv('stv4_c',cantieri);
+let svE=()=>sv('stv4_e',entries);
+let svDB=()=>sv('stv4_db',dibaFasce);
 
 function getDibaPct(importo){
   if(importo<=300000)return dibaFasce[0].perc;
@@ -1171,37 +1101,7 @@ function exportExcel(){
     }
     html+='<br/>';
   });
-  html+='
-<div id="pwa-bar" style="display:none;position:fixed;bottom:calc(72px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);
-     width:calc(100% - 28px);max-width:452px;background:#1C3557;color:#fff;border-radius:12px;
-     padding:12px 16px;align-items:center;gap:12px;z-index:90;box-shadow:0 4px 20px rgba(0,0,0,.3)">
-  <div style="flex:1;min-width:0">
-    <div style="font-size:13px;font-weight:700">📲 Installa Service Tracker</div>
-    <div style="font-size:11px;opacity:.75">Aggiungi alla schermata home per usarla offline</div>
-  </div>
-  <button id="pwa-install-btn" style="background:#3A7BD5;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">Installa</button>
-  <button onclick="document.getElementById('pwa-bar').style.display='none'" style="background:none;border:none;color:#fff;cursor:pointer;padding:4px;font-size:20px;line-height:1;opacity:.7">×</button>
-</div>
-<script>
-let _dp=null;
-window.addEventListener('beforeinstallprompt',e=>{
-  e.preventDefault();_dp=e;
-  const bar=document.getElementById('pwa-bar');
-  bar.style.display='flex';
-});
-document.getElementById('pwa-install-btn').addEventListener('click',async()=>{
-  if(!_dp)return;
-  _dp.prompt();
-  await _dp.userChoice;
-  _dp=null;
-  document.getElementById('pwa-bar').style.display='none';
-});
-window.addEventListener('appinstalled',()=>{
-  document.getElementById('pwa-bar').style.display='none';
-});
-</script>
-
-</body></html>';
+  html+='</body></html>';
   const blob=new Blob([html],{type:'application/vnd.ms-excel'});
   const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(blob),download:'service-tracker-'+new Date().toISOString().slice(0,10)+'.xls'});
   a.click();toast('✓ Excel esportato');
@@ -1240,240 +1140,46 @@ window.addEventListener('DOMContentLoaded',()=>{
   ['m-voce','m-zero'].forEach(id=>document.getElementById(id).addEventListener('change',updMP));
   renderCalStrip();renderLog();renderCantieriList();renderCantieriSettings();renderDibaSettings();renderTariffeList();updFiltPills();
 });
-// ── GITHUB GIST SYNC ──────────────────────────────────────────────────────────
-// Aggiunto alla fine dello script esistente
 
-const SYNC_KEY = 'stv4_sync';
-let syncState = JSON.parse(localStorage.getItem(SYNC_KEY) || '{"token":"","gistId":"","lastSync":null}');
-let syncTimer = null;
-let syncPending = false;
+var SYNC_KEY='stv4_sync';
+var _sS=JSON.parse(localStorage.getItem(SYNC_KEY)||'{"token":"","gistId":"","lastSync":null}');
+var _sT=null,_sP=false;
+function _saveSS(){localStorage.setItem(SYNC_KEY,JSON.stringify(_sS));}
+function updateSyncBadge(s){var el=document.getElementById('sync-badge');if(!el)return;var m={ok:{bg:'#217346',t:'OK'},saving:{bg:'#B7860B',t:'...'},error:{bg:'#C0392B',t:'!'},none:{bg:'#555',t:'Sync'}};var v=m[s]||m.none;el.style.background=v.bg;el.textContent=v.t;}
+function _aD(){return{cantieri:cantieri,entries:entries,dibaFasce:dibaFasce,_v:5,_ts:new Date().toISOString()};}
+async function loadFromGist(){if(!_sS.token||!_sS.gistId)return null;try{var r=await fetch('https://api.github.com/gists/'+_sS.gistId,{headers:{'Authorization':'token '+_sS.token,'Accept':'application/vnd.github.v3+json'}});if(!r.ok)return null;var d=await r.json(),c=d.files&&d.files['service-tracker.json']&&d.files['service-tracker.json'].content;return c?JSON.parse(c):null;}catch(e){return null;}}
+async function saveToGist(){if(!_sS.token){updateSyncBadge('none');return;}updateSyncBadge('saving');try{var url=_sS.gistId?'https://api.github.com/gists/'+_sS.gistId:'https://api.github.com/gists';var r=await fetch(url,{method:_sS.gistId?'PATCH':'POST',headers:{'Authorization':'token '+_sS.token,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},body:JSON.stringify({description:'ST Backup',public:false,files:{'service-tracker.json':{content:JSON.stringify(_aD(),null,2)}}})});if(!r.ok)throw new Error(r.status);var d=await r.json();if(!_sS.gistId){_sS.gistId=d.id;var el=document.getElementById('sync-gist-id');if(el)el.value=d.id;}_sS.lastSync=new Date().toISOString();_saveSS();_sP=false;updateSyncBadge('ok');}catch(e){updateSyncBadge('error');}}
+function _sch(){_sP=true;if(_sT)clearTimeout(_sT);_sT=setTimeout(function(){if(_sP)saveToGist();},30000);}
+var _bC=svC,_bE=svE;
+svC=function(){_bC();if(_sS.token)_sch();};
+svE=function(){_bE();if(_sS.token)_sch();};
+function openSyncSettings(){document.getElementById('sync-token-input').value=_sS.token||'';document.getElementById('sync-gist-id').value=_sS.gistId||'';document.getElementById('sync-last').textContent=_sS.lastSync?'Ultimo: '+new Date(_sS.lastSync).toLocaleString('it-IT'):'Mai sincronizzato';openMo('mo-sync');}
+async function saveSyncSettings(){var t=document.getElementById('sync-token-input').value.trim(),g=document.getElementById('sync-gist-id').value.trim();if(!t){toast('Inserisci il token GitHub');return;}_sS.token=t;_sS.gistId=g||'';_saveSS();closeMo('mo-sync');if(_sS.gistId){toast('Connessione...');var remote=await loadFromGist();if(remote){var rT=new Date(remote._ts||0),lT=new Date(_sS.lastSync||0);if(rT>lT&&confirm('Dati piu recenti su GitHub. Ripristinare?')){if(remote.cantieri)cantieri=remote.cantieri;if(remote.entries)entries=remote.entries;if(remote.dibaFasce)dibaFasce=remote.dibaFasce;_bC();_bE();svDB();renderCantieriList();renderCantieriSettings();renderLog();renderCalStrip();updFiltPills();toast('Dati ripristinati');}else{await saveToGist();toast('Sincronizzato');}}else{await saveToGist();toast('Backup creato');}}else{toast('Creazione...');await saveToGist();toast('Backup creato!');}updateSyncBadge(_sS.token?'ok':'none');}
+async function syncNow(){if(!_sS.token){toast('Configura la sincronizzazione');return;}await saveToGist();toast('Salvato su GitHub');}
+async function initSync(){if(!_sS.token){updateSyncBadge('none');return;}updateSyncBadge('saving');var remote=await loadFromGist();if(remote){var rT=new Date(remote._ts||0),lT=new Date(_sS.lastSync||0);if(rT>lT){if(remote.cantieri)cantieri=remote.cantieri;if(remote.entries)entries=remote.entries;if(remote.dibaFasce)dibaFasce=remote.dibaFasce;_bC();_bE();svDB();renderCantieriList();renderCantieriSettings();renderLog();renderCalStrip();updFiltPills();_sS.lastSync=remote._ts;_saveSS();toast('Aggiornato da GitHub');}updateSyncBadge('ok');}else{updateSyncBadge(_sS.gistId?'error':'none');}setInterval(function(){if(_sP)saveToGist();},300000);}
 
-function saveSyncState() {
-  localStorage.setItem(SYNC_KEY, JSON.stringify(syncState));
-}
 
-// Aggiorna indicatore nella topbar
-function updateSyncBadge(status) {
-  let badge = document.getElementById('sync-badge');
-  if (!badge) return;
-  const states = {
-    ok:       { bg: '#217346', txt: '✓ Sincronizzato' },
-    saving:   { bg: '#B7860B', txt: '↑ Salvataggio…' },
-    error:    { bg: '#C0392B', txt: '✗ Errore sync' },
-    offline:  { bg: '#888',    txt: '◌ Non connesso' },
-    none:     { bg: '#555',    txt: '⚙ Sync non config.' },
-  };
-  const s = states[status] || states.none;
-  badge.style.background = s.bg;
-  badge.textContent = s.txt;
-}
-
-// Tutti i dati in un unico oggetto
-function getAllData() {
-  return { cantieri, entries, dibaFasce, _v: 4, _ts: new Date().toISOString() };
-}
-
-// Carica da Gist
-async function loadFromGist() {
-  if (!syncState.token || !syncState.gistId) return null;
-  try {
-    const r = await fetch(`https://api.github.com/gists/${syncState.gistId}`, {
-      headers: { Authorization: `token ${syncState.token}`, Accept: 'application/vnd.github.v3+json' }
-    });
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    const data = await r.json();
-    const content = data.files['service-tracker.json']?.content;
-    if (!content) return null;
-    return JSON.parse(content);
-  } catch (e) {
-    console.error('loadFromGist:', e);
-    return null;
+window.addEventListener('DOMContentLoaded',function(){
+  var mfBlob=new Blob([JSON.stringify({name:'Service Tracker Cantieri',short_name:'Tracker',start_url:'./',display:'standalone',orientation:'portrait',background_color:'#1C3557',theme_color:'#1C3557',icons:[{src:'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192"><rect width="192" height="192" rx="32" fill="%231C3557"/><circle cx="96" cy="96" r="56" fill="none" stroke="white" stroke-width="10"/><polyline points="96,60 96,96 116,116" stroke="white" stroke-width="10" stroke-linecap="round" fill="none"/></svg>'),sizes:'192x192',type:'image/svg+xml',purpose:'any maskable'}]})],{type:'application/manifest+json'});
+  document.getElementById('pwa-manifest').href=URL.createObjectURL(mfBlob);
+  if('serviceWorker' in navigator){
+    var sw='const CACHE="st-v5";self.addEventListener("install",function(e){self.skipWaiting();});self.addEventListener("activate",function(e){e.waitUntil(caches.keys().then(function(k){return Promise.all(k.filter(function(x){return x!==CACHE;}).map(function(x){return caches.delete(x);}));}));self.clients.claim();});self.addEventListener("fetch",function(e){if(e.request.url.indexOf("api.github.com")>-1||e.request.url.indexOf("blob:")===0)return;e.respondWith(caches.match(e.request).then(function(r){return r||fetch(e.request).then(function(res){var c=res.clone();caches.open(CACHE).then(function(ca){ca.put(e.request,c);});return res;}).catch(function(){return caches.match(e.request);});}));});';
+    navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:'application/javascript'}))).catch(function(){});
   }
-}
+  var _dp=null;
+  window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();_dp=e;var b=document.getElementById('pwa-bar');if(b)b.style.display='flex';});
+  var ib=document.getElementById('pwa-install-btn');
+  if(ib)ib.addEventListener('click',function(){if(!_dp)return;_dp.prompt();_dp.userChoice.then(function(){_dp=null;var b=document.getElementById('pwa-bar');if(b)b.style.display='none';});});
+  window.addEventListener('appinstalled',function(){var b=document.getElementById('pwa-bar');if(b)b.style.display='none';});
+  document.getElementById('topbar-date').textContent=new Date().toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long'});
+  populateSelects();
+  document.getElementById('m-date').value=new Date().toISOString().slice(0,10);
+  document.getElementById('m-voce').addEventListener('change',updMP);
+  document.getElementById('m-zero').addEventListener('change',updMP);
+  renderCalStrip();renderLog();renderCantieriList();renderCantieriSettings();renderDibaSettings();renderTariffeList();updFiltPills();
+  setTimeout(initSync,800);
+});
 
-// Salva su Gist
-async function saveToGist() {
-  if (!syncState.token) { updateSyncBadge('none'); return; }
-  updateSyncBadge('saving');
-  const payload = JSON.stringify(getAllData(), null, 2);
-  try {
-    let url, method;
-    if (syncState.gistId) {
-      url = `https://api.github.com/gists/${syncState.gistId}`;
-      method = 'PATCH';
-    } else {
-      url = 'https://api.github.com/gists';
-      method = 'POST';
-    }
-    const body = {
-      description: 'Service Tracker – Backup automatico',
-      public: false,
-      files: { 'service-tracker.json': { content: payload } }
-    };
-    const r = await fetch(url, {
-      method,
-      headers: {
-        Authorization: `token ${syncState.token}`,
-        Accept: 'application/vnd.github.v3+json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(body)
-    });
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    const data = await r.json();
-    if (!syncState.gistId) {
-      syncState.gistId = data.id;
-    }
-    syncState.lastSync = new Date().toISOString();
-    saveSyncState();
-    syncPending = false;
-    updateSyncBadge('ok');
-  } catch (e) {
-    console.error('saveToGist:', e);
-    updateSyncBadge('error');
-  }
-}
-
-// Schedula salvataggio (debounce 30s)
-function scheduleSync() {
-  syncPending = true;
-  if (syncTimer) clearTimeout(syncTimer);
-  syncTimer = setTimeout(() => { if (syncPending) saveToGist(); }, 30000);
-}
-
-// Salvataggio immediato + schedule
-function triggerSync() {
-  if (!syncState.token) return;
-  scheduleSync();
-}
-
-// Patch dei metodi di salvataggio originali
-const _origSvC = svC;
-const _origSvE = svE;
-window.svC = function() { _origSvC(); triggerSync(); };
-window.svE = function() { _origSvE(); triggerSync(); };
-
-// Modale sync settings
-function openSyncSettings() {
-  document.getElementById('sync-token-input').value = syncState.token || '';
-  document.getElementById('sync-gist-id').value = syncState.gistId || '';
-  document.getElementById('sync-last').textContent = syncState.lastSync
-    ? 'Ultimo salvataggio: ' + new Date(syncState.lastSync).toLocaleString('it-IT')
-    : 'Mai sincronizzato';
-  openMo('mo-sync');
-}
-
-async function saveSyncSettings() {
-  const token = document.getElementById('sync-token-input').value.trim();
-  const gistId = document.getElementById('sync-gist-id').value.trim();
-  if (!token) { toast('Inserisci il token GitHub'); return; }
-  syncState.token = token;
-  syncState.gistId = gistId || '';
-  saveSyncState();
-  closeMo('mo-sync');
-  // Se c'è un gistId esistente, prova a caricare i dati
-  if (syncState.gistId) {
-    toast('Connessione a GitHub…');
-    const remote = await loadFromGist();
-    if (remote) {
-      // Confronta timestamp
-      const remoteTs = new Date(remote._ts || 0);
-      const localTs = new Date(syncState.lastSync || 0);
-      if (remoteTs > localTs) {
-        if (confirm('Trovati dati più recenti su GitHub. Vuoi sovrascrivere i dati locali?')) {
-          if (remote.cantieri) cantieri = remote.cantieri;
-          if (remote.entries) entries = remote.entries;
-          if (remote.dibaFasce) dibaFasce = remote.dibaFasce;
-          svC(); svE(); svDB();
-          renderCantieriList(); renderCantieriSettings(); renderLog(); renderCalStrip();
-          toast('✓ Dati ripristinati da GitHub');
-        }
-      } else {
-        toast('✓ Dati locali più recenti – salvataggio…');
-        await saveToGist();
-      }
-    } else {
-      toast('Gist non trovato – verrà creato al primo salvataggio');
-    }
-  } else {
-    // Nuovo gist – salva subito
-    toast('Creazione backup su GitHub…');
-    await saveToGist();
-    // Mostra il gistId appena creato
-    if (syncState.gistId) {
-      document.getElementById('sync-gist-id').value = syncState.gistId;
-      toast('✓ Backup creato! Copia l\'ID Gist per altri dispositivi.');
-    }
-  }
-  updateSyncBadge(syncState.token ? 'ok' : 'none');
-}
-
-async function syncNow() {
-  if (!syncState.token) { toast('Configura prima la sincronizzazione'); return; }
-  await saveToGist();
-  toast('✓ Sincronizzato');
-}
-
-// Init sync al caricamento
-async function initSync() {
-  const badge = document.getElementById('sync-badge');
-  if (!syncState.token) { updateSyncBadge('none'); return; }
-  updateSyncBadge('saving');
-  const remote = await loadFromGist();
-  if (remote) {
-    const remoteTs = new Date(remote._ts || 0);
-    const localTs = new Date(syncState.lastSync || 0);
-    if (remoteTs > localTs) {
-      if (remote.cantieri) cantieri = remote.cantieri;
-      if (remote.entries) entries = remote.entries;
-      if (remote.dibaFasce) dibaFasce = remote.dibaFasce;
-      svC(); svE(); svDB();
-      renderCantieriList(); renderCantieriSettings(); renderLog(); renderCalStrip(); updFiltPills();
-      syncState.lastSync = remote._ts;
-      saveSyncState();
-      toast('✓ Dati aggiornati da GitHub');
-    }
-    updateSyncBadge('ok');
-  } else {
-    updateSyncBadge('error');
-  }
-  // Autosave ogni 5 minuti
-  setInterval(() => { if (syncPending) saveToGist(); }, 300000);
-}
-
-
-// Init sync after DOM ready
-document.addEventListener("DOMContentLoaded", () => { setTimeout(initSync, 500); });
 </script>
-
-<div id="pwa-bar" style="display:none;position:fixed;bottom:calc(72px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);
-     width:calc(100% - 28px);max-width:452px;background:#1C3557;color:#fff;border-radius:12px;
-     padding:12px 16px;align-items:center;gap:12px;z-index:90;box-shadow:0 4px 20px rgba(0,0,0,.3)">
-  <div style="flex:1;min-width:0">
-    <div style="font-size:13px;font-weight:700">📲 Installa Service Tracker</div>
-    <div style="font-size:11px;opacity:.75">Aggiungi alla schermata home per usarla offline</div>
-  </div>
-  <button id="pwa-install-btn" style="background:#3A7BD5;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">Installa</button>
-  <button onclick="document.getElementById('pwa-bar').style.display='none'" style="background:none;border:none;color:#fff;cursor:pointer;padding:4px;font-size:20px;line-height:1;opacity:.7">×</button>
-</div>
-<script>
-let _dp=null;
-window.addEventListener('beforeinstallprompt',e=>{
-  e.preventDefault();_dp=e;
-  const bar=document.getElementById('pwa-bar');
-  bar.style.display='flex';
-});
-document.getElementById('pwa-install-btn').addEventListener('click',async()=>{
-  if(!_dp)return;
-  _dp.prompt();
-  await _dp.userChoice;
-  _dp=null;
-  document.getElementById('pwa-bar').style.display='none';
-});
-window.addEventListener('appinstalled',()=>{
-  document.getElementById('pwa-bar').style.display='none';
-});
-</script>
-
 </body>
 </html>
